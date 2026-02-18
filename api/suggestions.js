@@ -14,8 +14,11 @@ export default async function handler(req, res) {
   const accessToken = authHeader.slice(7)
 
   try {
+    console.log('Starting suggestions request')
+
     // Get user ID for personalization
     const userId = await getSpotifyUserId(accessToken)
+    console.log('Got Spotify user:', userId)
 
     // Get user's taste feedback from Firestore
     let tasteFeedback = []
@@ -29,7 +32,9 @@ export default async function handler(req, res) {
         .limit(10)
         .get()
       tasteFeedback = feedbackSnap.docs.map(doc => doc.data().text)
-    } catch {
+      console.log('Got taste feedback:', tasteFeedback.length, 'items')
+    } catch (fbErr) {
+      console.log('Firestore skipped:', fbErr.message)
       // Firestore may not be configured yet — continue without feedback
     }
 
@@ -45,6 +50,7 @@ export default async function handler(req, res) {
 
     // Call Gemini with Google Search grounding
     const geminiApiKey = process.env.GEMINI_API_KEY
+    console.log('Calling Gemini API...')
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
       {
@@ -104,6 +110,7 @@ Rules:
     }
 
     const geminiData = await geminiRes.json()
+    console.log('Gemini response received, parsing...')
 
     // Extract text from Gemini response
     let responseText = ''
