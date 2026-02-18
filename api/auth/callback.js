@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       user_id: profile.id,
     })
 
-    const frontendUrl = process.env.FRONTEND_URL || ''
+    const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/+$/, '')
     res.redirect(`${frontendUrl}/callback?${params.toString()}`)
   } catch (err) {
     console.error('OAuth callback error:', err)
