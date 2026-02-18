@@ -12,6 +12,7 @@ export default function TodayPage() {
   const [songs, setSongs] = useState([])
   const [selected, setSelected] = useState(new Set())
   const [loading, setLoading] = useState(true)
+  const [loadingStatus, setLoadingStatus] = useState('Searching music history...')
   const [error, setError] = useState(null)
   const [feedbackHistory, setFeedbackHistory] = useState([])
 
@@ -38,6 +39,20 @@ export default function TodayPage() {
   async function fetchSuggestions() {
     setLoading(true)
     setError(null)
+    setLoadingStatus('Searching music history...')
+    const statusMessages = [
+      'Finding birthdays and events...',
+      'Asking AI for suggestions...',
+      'Matching songs on Spotify...',
+      'Almost there...',
+    ]
+    let msgIndex = 0
+    const statusInterval = setInterval(() => {
+      if (msgIndex < statusMessages.length) {
+        setLoadingStatus(statusMessages[msgIndex])
+        msgIndex++
+      }
+    }, 3000)
     try {
       const token = getAccessToken()
       if (!token) return
@@ -50,6 +65,7 @@ export default function TodayPage() {
     } catch (err) {
       setError(err.message)
     } finally {
+      clearInterval(statusInterval)
       setLoading(false)
     }
   }
@@ -144,7 +160,11 @@ export default function TodayPage() {
       <main className="max-w-2xl mx-auto px-4 py-6">
         {/* Song list */}
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            <div className="text-center py-4">
+              <div className="animate-spin text-3xl mb-3">🎵</div>
+              <p className="text-sm text-gray-400 transition-all">{loadingStatus}</p>
+            </div>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white/5 rounded-xl p-4 animate-pulse">
                 <div className="flex gap-3">
